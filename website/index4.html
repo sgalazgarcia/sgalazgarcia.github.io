@@ -9,18 +9,84 @@
 }
 
 </style>
+
+<h1>
+Percentage of non insured people across U.S. countries
+</h1>
+
+
+
+<div class='my-legend'>
+<div class='legend-title'>Percentage of uninsured population:</div>
+<div class='legend-scale'>
+  <ul class='legend-labels'>
+    <li><span style='background:#F7F7F7;'></span>0 - 5%</li>
+    <li><span style='background:#D9D9D9;'></span>5 - 10 %</li>
+    <li><span style='background:#BDBDBD;'></span>10 - 15%</li>
+    <li><span style='background:#969696;'></span>15 - 20%</li>
+    <li><span style='background:#636363;'></span>20 - 25%</li>
+    <li><span style='background:#252525;'></span>25% + </li>
+  </ul>
+</div>
+<div class='legend-source'>Source: <a href="#link to source">American Community Survey, 2014 Five-Year Estimates.</a></div>
+</div>
+
+<style type='text/css'>
+  .my-legend .legend-title {
+    text-align: left;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 90%;
+    }
+  .my-legend .legend-scale ul {
+    margin: 0;
+    padding: 0;
+    float: left;
+    list-style: none;
+    }
+  .my-legend .legend-scale ul li {
+    display: block;
+    float: left;
+    width: 50px;
+    margin-bottom: 6px;
+    text-align: center;
+    font-size: 80%;
+    list-style: none;
+    }
+  .my-legend ul.legend-labels li span {
+    display: block;
+    float: left;
+    height: 15px;
+    width: 50px;
+    }
+  .my-legend .legend-source {
+    font-size: 70%;
+    color: #999;
+    clear: both;
+    }
+  .my-legend a {
+    color: #777;
+    }
+</style>
+
+<br>
+<br>
+<br>
+<br>
+
 <body>
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script src="//d3js.org/queue.v1.min.js"></script>
 <script src="//d3js.org/topojson.v1.min.js"></script>
 <script>
 
+
 var width = 960,
     height = 500;
 
 var color = d3.scale.threshold()
-    .domain([0.02, 0.04, 0.06, 0.08, 0.10])
-    .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
+    .domain([0.05, 0.1, 0.15, 0.2, 0.25])
+    .range(["#f7f7f7", "#d9d9d9", "#bdbdbd", "#969696", "#636363", "#252525"]);
 
 var path = d3.geo.path();
 
@@ -29,8 +95,8 @@ var svg = d3.select("body").append("svg")
     .attr("height", height);
 
 queue()
-    .defer(d3.json, "/data/us.json")
-    .defer(d3.tsv, "/data/health_care_2014.csv")
+    .defer(d3.json, "http://sgalazgarcia.github.io/website/data/us.json")
+    .defer(d3.csv, "http://sgalazgarcia.github.io/website/data/health_care_2014.csv")
     .await(ready);
 
 function ready(error, us, unemployment) {
@@ -38,7 +104,13 @@ function ready(error, us, unemployment) {
 
   var rateById = {};
 
-  unemployment.forEach(function(d) { rateById[d.id] = +d.rate; });
+  unemployment.forEach(function(d) { 
+    console.log(d)
+    rateById[d.id] = +d.perc_no_hc; });
+
+
+//svg.append creates a "layer". It adds to the document objet model (MOD)
+//.selectAll creates a "layer". Its selectivg everything. Its not creating until until we tell them to do so.
 
   svg.append("g")
       .attr("class", "counties")
@@ -53,5 +125,7 @@ function ready(error, us, unemployment) {
       .attr("class", "states")
       .attr("d", path);
 }
+
+
 
 </script>
