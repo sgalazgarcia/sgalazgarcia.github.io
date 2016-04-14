@@ -51,7 +51,7 @@ var svg = d3.select("body")
 var healthdata = [];
 /* Data in strings like it would be if imported from a csv */
 
-d3.csv("/data/health_care_2014_w11.csv", function(d){
+d3.csv("http://sgalazgarcia.github.io/week10/data/health_care_2014_w11.csv", function(d){
     if (d.state == " Massachusetts"){
         return {
             name: d.name,
