@@ -1,42 +1,50 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+    <title>Sergio's Project</title>
+    
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Sergio's Project</title>
+ 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="css/portfolio-item.css" rel="stylesheet">
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    
+    <!-- STYLE -->
     <style>
-        body {
+    
+    body 
+         {
             position: absolute;
             text-align: center;
             font-family: "Proxima Nova", "Montserrat", sans-serif;
-        }
-        #sliderContainer {
+         }
+    #sliderContainer 
+         {
             position: relative;
             top: 600px;
-        }
-        #title h1 {
+         }
+    #title h1 
+         {
             margin-bottom: 0px;
-        }
-        #title p {
+         }
+    #title p {
             margin-top: 2px;
             margin-bottom: 0px;
-        }
+         }
+    .overlay {
+  fill: none;
+  pointer-events: all;
+}
     </style>    
     
-    <!-- JavaScripts -->
+    <!-- JJAVASCRIPTS -->
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <script src="http://duspviz.mit.edu/_assets/data/riyadh_traffic_voc.json"></script>
     <script src="//d3js.org/queue.v1.min.js"></script>
@@ -165,60 +173,104 @@
     <!-- /.container -->
     
     <script>
+        
+        
+        
+        
         var width = 700;
         var height = 580;
+        var scale0 = (100* width - 1) / 2 / Math.PI;
 
-        var color = d3.scale.threshold()
-            .domain([0.05, 0.1, 0.15, 0.2, 0.25])
-            .range(["#f7f7f7", "#d9d9d9", "#bdbdbd", "#969696", "#636363", "#252525"]);
+        // var color = d3.scale.threshold()
+        //     .domain([0.05, 0.1, 0.15, 0.2, 0.25])
+        //     .range(["#f7f7f7", "#d9d9d9", "#bdbdbd", "#969696", "#636363", "#252525"]);
 
+            
+            var color = d3.scale.linear()
+    .range(["#dae7f1", "#1d3549"])
+    .domain([0.1, 0.8])
+    .interpolate(d3.interpolateHcl);
+    
+    
+    
         var albersProjection = d3.geo.albers()
-            .scale( 45000 )
+            // .scale( 45000 )
             .rotate( [-46.670616,0] )
             .center( [0, 24.716042] )
-            .translate( [width/2,height/2] );
+            // .translate( [width/2,height/2] );
 
+        var zoom = d3.behavior.zoom()
+            .translate([width / 2, height / 2])
+            .scale(scale0)
+            .scaleExtent([scale0, 8 * scale0])
+            .on("zoom", zoomed);
+        
         var geoPath = d3.geo.path()
             .projection( albersProjection );
 
         var svg = d3.select("#taz_map")
             .append( "svg" )
             .attr( "width", width )
-            .attr( "height", height );
+            .attr( "height", height ).append("g");;
+        
+        var g = svg.append("g");
+        svg.append("rect")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height);
+
+        svg.call(zoom)
+        .call(zoom.event);
 
         queue()
             .defer(d3.json, "data/mikes_topo.json")
             .defer(d3.csv, "data/mikes.csv")
             .await(ready);
 
+
+       function zoomed()  {
+        console.log("zoomed gets triggerd")
+           
+           albersProjection
+          .translate(zoom.translate())
+          .scale(zoom.scale());
+
+         g.selectAll("path")
+          .attr("d", geoPath);
+        }
+
+
         function ready(error, riyadh, migrant) {
         if (error) throw error;
+        
+        
 
-        console.log("data loaded");
+            // console.log("data loaded");
 
-        var rateById = {};
+            var rateById = {};
 
-            migrant.forEach(function(d) { 
-                rateById[d.id] = +d.sergios_data_Perc_Cont;
-            });
+                migrant.forEach(function(d) { 
+                    rateById[d.id] = +d.sergios_data_Perc_Cont;
+                });
 
 
         //svg.append creates a "layer". It adds to the document objet model (MOD)
         //.selectAll creates a "layer". Its selectivg everything. Its not creating until until we tell them to do so.
 
-            svg.append("g")
-                .attr("class", "states")
-                .selectAll("path")
+            // svg.append("g")
+               
+                g.selectAll("path")
                 .data(topojson.feature(riyadh, riyadh.objects.collection).features)
                 .enter()
                 .append("path")
                 .attr("d", geoPath)
                 .attr("stroke-width", 5)
                 .style("fill", function(d) { 
-                    console.log(d);
-                    console.log(d.properties.sergios_data_Perc_Cont);
+                    // console.log(d);
+                    // console.log(d.properties.sergios_data_Perc_Cont);
                     return color(d.properties.sergios_data_Perc_Cont);
                 });
+
 
             // svg.append("path")
             //    .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a.id !== b.id; }))
